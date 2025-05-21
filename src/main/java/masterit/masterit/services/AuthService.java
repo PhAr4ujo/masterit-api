@@ -9,6 +9,7 @@ import masterit.masterit.entities.User;
 import masterit.masterit.enums.Role;
 import lombok.AllArgsConstructor;
 import masterit.masterit.repositories.EmailVerificationTokenRepository;
+import masterit.masterit.services.interfaces.IJwtService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -35,6 +36,7 @@ public class AuthService implements IAuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final JavaMailSenderImpl mailSender;
+    private final IJwtService jwtService;
 
     @Override
     @Transactional
@@ -109,5 +111,29 @@ public class AuthService implements IAuthService {
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole());
         return dto;
+    }
+
+    @Override
+    @Transactional
+    public String verifyAndLogin(String token) {
+        EmailVerificationToken verificationToken = emailVerificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid verification token."));
+
+        if (verificationToken.getExpiryDate().before(new Date())) {
+            throw new IllegalArgumentException("Verification token has expired.");
+        }
+
+        User user = verificationToken.getUser();
+
+        if (user.getEmailVerifiedAt() != null) {
+            throw new IllegalArgumentException("User is already verified.");
+        }
+
+        user.setEmailVerifiedAt(new Date());
+        userRepository.save(user);
+
+        emailVerificationTokenRepository.delete(verificationToken);
+
+        return jwtService.generateToken(user);
     }
 }
