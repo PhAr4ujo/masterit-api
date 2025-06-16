@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: master_it-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5431:5432"
+    networks:
+      - master_it-network
+
+  app:
+    build: .
+    container_name: master_it-api
+    volumes:
+      - ./src:/app/src
+      - ./pom.xml:/app/pom.xml
+    working_dir: /app
+    command: mvn spring-boot:run
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+    ports:
+      - "8080:8080"
+    networks:
+      - master_it-network
+    env_file:
+      - .env
+
+volumes:
+  pgdata:
+
+networks:
+  master_it-network:
