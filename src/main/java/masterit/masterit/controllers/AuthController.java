@@ -3,6 +3,7 @@ package masterit.masterit.controllers;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import masterit.masterit.dtos.input.RegisterDTO;
+import masterit.masterit.dtos.input.LoginDTO;
 import masterit.masterit.dtos.output.UserDTO;
 import masterit.masterit.entities.User;
 import masterit.masterit.repositories.UserRepository;
@@ -80,5 +81,31 @@ public class AuthController {
 
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         return ResponseEntity.ok(userDetails);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody @Valid LoginDTO data) {
+        try {
+            String jwt = authService.login(data);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Login successful.",
+                    "token", jwt
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An error occurred.", "details", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        // TODO blacklist
+        return ResponseEntity.ok().build();
     }
 }

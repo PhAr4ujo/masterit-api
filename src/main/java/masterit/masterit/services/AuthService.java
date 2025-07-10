@@ -3,6 +3,7 @@ package masterit.masterit.services;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import masterit.masterit.dtos.input.RegisterDTO;
+import masterit.masterit.dtos.input.LoginDTO;
 import masterit.masterit.dtos.output.UserDTO;
 import masterit.masterit.entities.EmailVerificationToken;
 import masterit.masterit.entities.User;
@@ -136,4 +137,21 @@ public class AuthService implements IAuthService {
 
         return jwtService.generateToken(user);
     }
+
+    @Override
+    public String login(LoginDTO request) {
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
+
+        if (user.getEmailVerifiedAt() == null) {
+            throw new IllegalArgumentException("Email has not been verified.");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Invalid email or password.");
+        }
+
+        return jwtService.generateToken(user);
+    }
+
 }
