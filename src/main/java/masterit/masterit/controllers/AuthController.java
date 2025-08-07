@@ -51,6 +51,7 @@ public class AuthController {
         }
     }
 
+
     @GetMapping("/verify/{token}")
     public ResponseEntity<?> verify(@PathVariable String token) {
         try {
