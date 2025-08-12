@@ -19,11 +19,16 @@ services:
     volumes:
       - ./src:/app/src
       - ./pom.xml:/app/pom.xml
+      - ./target/classes:/app/target/classes
+      - ~/.m2:/root/.m2
     working_dir: /app
-    command: mvn spring-boot:run
+    command: sh -c "mvn compile spring-boot:run"
     depends_on:
       - postgres
     environment:
+      MAVEN_OPTS: -Dspring.devtools.restart.enabled=true
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_BOOT_DOCKER_COMPOSE_ENABLED: "false"
       DB_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -33,6 +38,7 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+
     ports:
       - "8080:8080"
     networks:
