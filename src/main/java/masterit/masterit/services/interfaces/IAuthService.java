@@ -9,4 +9,5 @@ public interface IAuthService {
     public UserDTO register(RegisterDTO request) throws MessagingException;
     public String verifyAndLogin(String token);
     public String login(LoginDTO request);
+    public String resetPasswordRequest(String email) throws MessagingException;
 }

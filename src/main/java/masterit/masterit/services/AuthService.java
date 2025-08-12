@@ -6,10 +6,12 @@ import masterit.masterit.dtos.input.RegisterDTO;
 import masterit.masterit.dtos.input.LoginDTO;
 import masterit.masterit.dtos.output.UserDTO;
 import masterit.masterit.entities.EmailVerificationToken;
+import masterit.masterit.entities.PasswordResetToken;
 import masterit.masterit.entities.User;
 import masterit.masterit.enums.Role;
 import lombok.AllArgsConstructor;
 import masterit.masterit.repositories.EmailVerificationTokenRepository;
+import masterit.masterit.repositories.PasswordResetTokenRepository;
 import masterit.masterit.services.interfaces.IJwtService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,7 @@ public class AuthService implements IAuthService {
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final JavaMailSenderImpl mailSender;
     private final IJwtService jwtService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     @Transactional
@@ -154,4 +157,58 @@ public class AuthService implements IAuthService {
         return jwtService.generateToken(user);
     }
 
+    @Override
+    public String resetPasswordRequest(String email) throws MessagingException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email."));
+
+        String token = UUID.randomUUID().toString();
+        Date expiryDate = Date.from(Instant.now().plus(Duration.ofMinutes(15)));
+
+        PasswordResetToken resetToken = new PasswordResetToken();
+
+        resetToken.setToken(token);
+        resetToken.setUser(user);
+        resetToken.setExpiryDate(expiryDate);
+        passwordResetTokenRepository.save(resetToken);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+        String html = """
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+              <head>
+                <meta charset="UTF-8">
+                <title>Redefinição de Senha</title>
+              </head>
+              <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 30px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 30px;">
+                  <h2 style="color: #343a40; text-align: center;">🔐 Redefinição de Senha</h2>
+                  <p style="font-size: 16px; color: #495057;">Recebemos uma solicitação para redefinir a senha da sua conta na <strong>Master IT</strong>.</p>
+                  <p style="font-size: 16px; color: #495057;">Se foi você quem fez a solicitação, clique no botão abaixo para criar uma nova senha:</p>
+                  
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="http://localhost:5173/reset-password/%s"
+                       style="display: inline-block; font-size: 18px; font-weight: bold; color: #fff; background: linear-gradient(135deg, #0d6efd, #6610f2); padding: 14px 30px; border-radius: 8px; text-decoration: none; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4); transition: background 0.3s ease;">
+                      Redefinir Senha
+                    </a>
+                  </div>
+                  
+                  <p style="font-size: 14px; color: #6c757d;">Este link é válido por apenas <strong>15 minutos</strong>.</p>
+                  <p style="font-size: 14px; color: #6c757d;">Se você não solicitou a redefinição, ignore este e-mail. Sua senha permanecerá a mesma.</p>
+                  
+                  <p style="font-size: 14px; color: #adb5bd; text-align: center; margin-top: 40px;">Atenciosamente,<br><strong>Equipe Master IT 💻</strong></p>
+                </div>
+              </body>
+            </html>
+            """.formatted(resetToken.getToken());
+
+        helper.setFrom("masteritcorp@gmail.com");
+        helper.setTo(resetToken.getUser().getEmail());
+        helper.setSubject("Veify Your Account");
+        helper.setText(html, true);
+        mailSender.send(mimeMessage);
+        return "Password reset email sent successfully.";
+    }
 }

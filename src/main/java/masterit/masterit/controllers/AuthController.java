@@ -71,6 +71,24 @@ public class AuthController {
         }
     }
 
+    @GetMapping("reset/password/request/{email}")
+    public ResponseEntity<?> resetPasswordRequest(@PathVariable String email) {
+        try {
+            String response = authService.resetPasswordRequest(email);
+            return ResponseEntity.ok(Map.of(
+                    "message", response
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An error occurred.", "details", e.getMessage()));
+        }
+    }
+
     @GetMapping("/me")
     public ResponseEntity<?> getUserFromToken(@RequestHeader("Authorization") String authHeader) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
