@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import masterit.masterit.dtos.input.RegisterDTO;
 import masterit.masterit.dtos.input.LoginDTO;
+import masterit.masterit.dtos.input.ResetPasswordDTO;
 import masterit.masterit.dtos.output.UserDTO;
 import masterit.masterit.entities.User;
 import masterit.masterit.repositories.UserRepository;
@@ -75,6 +76,24 @@ public class AuthController {
     public ResponseEntity<?> resetPasswordRequest(@PathVariable String email) {
         try {
             String response = authService.resetPasswordRequest(email);
+            return ResponseEntity.ok(Map.of(
+                    "message", response
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An error occurred.", "details", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset/password/verify")
+    public ResponseEntity<?> resetPasswordRequest(@RequestBody @Valid ResetPasswordDTO data) {
+        try {
+            String response = authService.resetPassword(data);
             return ResponseEntity.ok(Map.of(
                     "message", response
             ));

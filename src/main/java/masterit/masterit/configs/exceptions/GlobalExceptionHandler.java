@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
         String message = "Invalid or malformed JSON.";
 
         if (ex.getCause() instanceof MismatchedInputException) {
-            message = "Malformed JSON: expected an object, but received an array or invalid structure.";
+            message = "Malformed JSON: expected an object with all required fields.";
         }
 
         Map<String, Object> body = new HashMap<>();

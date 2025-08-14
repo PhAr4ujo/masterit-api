@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import masterit.masterit.dtos.input.RegisterDTO;
 import masterit.masterit.dtos.input.LoginDTO;
+import masterit.masterit.dtos.input.ResetPasswordDTO;
 import masterit.masterit.dtos.output.UserDTO;
 import masterit.masterit.entities.EmailVerificationToken;
 import masterit.masterit.entities.PasswordResetToken;
@@ -210,5 +211,25 @@ public class AuthService implements IAuthService {
         helper.setText(html, true);
         mailSender.send(mimeMessage);
         return "Password reset email sent successfully.";
+    }
+
+    @Override
+    @Transactional
+    public String resetPassword(ResetPasswordDTO data) {
+        PasswordResetToken passwordReset = passwordResetTokenRepository.findByToken(data.getToken())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid verification token."));
+
+        if (passwordReset.getExpiryDate().before(new Date())) {
+            throw new IllegalArgumentException("Reset password token has expired.");
+        }
+
+        User user = passwordReset.getUser();
+
+        user.setPassword(passwordEncoder.encode(data.getPassword()));
+        userRepository.save(user);
+
+        passwordResetTokenRepository.delete(passwordReset);
+
+        return "Password Reseted";
     }
 }
