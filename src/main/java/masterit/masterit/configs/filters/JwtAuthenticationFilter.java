@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import masterit.masterit.services.interfaces.IJwtService;
 import masterit.masterit.services.UserDetailsService;
+import masterit.masterit.services.interfaces.ITokenBlackListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private IJwtService jwtService;
+
+    @Autowired
+    private ITokenBlackListService tokenBlacklistService;
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -39,6 +43,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String jwt = authHeader.substring(7);
+
+        if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            String jsonResponse = """
+            {
+                "error": "Unauthorized",
+                "message": "Invalid or expired token"
+            }
+            """;
+
+                response.getWriter().write(jsonResponse);
+                return;
+            }
+
         String username = jwtService.extractUsername(jwt);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

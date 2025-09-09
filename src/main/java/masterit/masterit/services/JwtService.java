@@ -63,4 +63,10 @@ public class JwtService implements IJwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+    
+    @Override
+    public Date getExpirationDateFromToken(String token) {
+        return extractAllClaims(token).getExpiration();
+    }
+
 }

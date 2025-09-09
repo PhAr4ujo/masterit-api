@@ -1,5 +1,6 @@
 package masterit.masterit.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import masterit.masterit.dtos.input.RegisterDTO;
@@ -142,8 +143,13 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        // TODO blacklist
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+
+        authService.logout(authHeader);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Logged out successfully"
+        ));
     }
 }

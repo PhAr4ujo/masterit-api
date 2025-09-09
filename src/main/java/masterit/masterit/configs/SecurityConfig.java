@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/auth/verify/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/reset/password/request/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/reset/password/verify").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/blacklist").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

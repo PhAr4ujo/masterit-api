@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import masterit.masterit.repositories.EmailVerificationTokenRepository;
 import masterit.masterit.repositories.PasswordResetTokenRepository;
 import masterit.masterit.services.interfaces.IJwtService;
+import masterit.masterit.services.interfaces.ITokenBlackListService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -30,6 +31,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Primary
 @Service
@@ -42,6 +44,7 @@ public class AuthService implements IAuthService {
     private final JavaMailSenderImpl mailSender;
     private final IJwtService jwtService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final ITokenBlackListService tokenBlackListService;
 
     @Override
     @Transactional
@@ -231,5 +234,19 @@ public class AuthService implements IAuthService {
         passwordResetTokenRepository.delete(passwordReset);
 
         return "Password Reseted";
+    }
+
+    @Override
+    public void logout(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+
+            Date expiration = jwtService.getExpirationDateFromToken(token);
+            long ttl = (expiration.getTime() - System.currentTimeMillis()) / 1000;
+
+            if (ttl > 0) {
+                tokenBlackListService.blacklistToken(token, ttl);
+            }
+        }
     }
 }

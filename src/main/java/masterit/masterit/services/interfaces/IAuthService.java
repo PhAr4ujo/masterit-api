@@ -12,4 +12,5 @@ public interface IAuthService {
     public String login(LoginDTO request);
     public String resetPasswordRequest(String email) throws MessagingException;
     public String resetPassword(ResetPasswordDTO data);
+    public void logout(String header);
 }
