@@ -13,6 +13,18 @@ services:
     networks:
       - master_it-network
 
+  redis:
+    image: redis:7
+    container_name: redis-masterit
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+    command: [ "redis-server", "--appendonly", "yes" ]
+    networks:
+      - master_it-network
+
   app:
     build: .
     container_name: master_it-api
@@ -25,6 +37,7 @@ services:
     command: sh -c "mvn compile spring-boot:run"
     depends_on:
       - postgres
+      - redis
     environment:
       MAVEN_OPTS: -Dspring.devtools.restart.enabled=true
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
@@ -38,6 +51,8 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+      SPRING_REDIS_HOST: ${SPRING_REDIS_HOST}
+      SPRING_REDIS_PORT: ${SPRING_REDIS_PORT}
 
     ports:
       - "8080:8080"
@@ -48,6 +63,7 @@ services:
 
 volumes:
   pgdata:
+  redis_data:
 
 networks:
   master_it-network:

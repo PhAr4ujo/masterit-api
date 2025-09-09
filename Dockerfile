@@ -1,10 +1,13 @@
-FROM maven:3.9.6-eclipse-temurin-21-alpine
+    FROM maven:3.9.6-eclipse-temurin-21-alpine
 
-WORKDIR /app
+    WORKDIR /app
 
-COPY pom.xml .
-RUN mvn dependency:go-offline
+    COPY pom.xml .
+    RUN mvn dependency:go-offline
 
-COPY src ./src
+    COPY src ./src
 
-CMD ["mvn", "spring-boot:run"]
+    RUN mvn clean package -DskipTests
+
+    CMD ["java", "-jar", "target/masterit-0.0.1-SNAPSHOT.jar"]
+
