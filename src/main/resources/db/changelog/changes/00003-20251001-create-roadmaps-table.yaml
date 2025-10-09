@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3
+      author: admin
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: roadmaps
+      changes:
+        - createTable:
+            tableName: roadmaps
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: roadmaps
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_roadmaps_user_id

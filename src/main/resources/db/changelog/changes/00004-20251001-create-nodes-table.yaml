@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: admin
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: nodes
+      changes:
+        - createTable:
+            tableName: nodes
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: roadmap_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: position_x
+                  type: FLOAT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: position_y
+                  type: FLOAT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: label
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: priority
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: nodes
+            baseColumnNames: roadmap_id
+            referencedTableName: roadmaps
+            referencedColumnNames: id
+            constraintName: fk_nodes_roadmaps
+

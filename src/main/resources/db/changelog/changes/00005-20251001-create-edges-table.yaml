@@ -1,0 +1,80 @@
+databaseChangeLog:
+  - changeSet:
+      id: 5
+      author: admin
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: edges
+      changes:
+        - createTable:
+            tableName: edges
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: roadmap_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: target_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: animated
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: marker_end_type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: marker_end_width
+                  type: INT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: marker_end_height
+                  type: INT
+                  constraints:
+                    nullable: true
+
+        - addForeignKeyConstraint:
+            baseTableName: edges
+            baseColumnNames: roadmap_id
+            referencedTableName: roadmaps
+            referencedColumnNames: id
+            constraintName: fk_edges_roadmaps
+
+        - addForeignKeyConstraint:
+            baseTableName: edges
+            baseColumnNames: source_id
+            referencedTableName: nodes
+            referencedColumnNames: id
+            constraintName: fk_edges_source_nodes
+
+        - addForeignKeyConstraint:
+            baseTableName: edges
+            baseColumnNames: target_id
+            referencedTableName: nodes
+            referencedColumnNames: id
+            constraintName: fk_edges_target_nodes
