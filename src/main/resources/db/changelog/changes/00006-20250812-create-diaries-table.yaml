@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: 6
+      author: admin
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: diaries
+      changes:
+        - createTable:
+            tableName: diaries
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: roadmap_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: diaries
+            baseColumnNames: roadmap_id
+            referencedTableName: roadmaps
+            referencedColumnNames: id
+            constraintName: fk_diaries_roadmaps
+            onDelete: CASCADE

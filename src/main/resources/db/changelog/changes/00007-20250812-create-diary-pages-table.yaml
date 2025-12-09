@@ -1,0 +1,68 @@
+# db.changelog-7-diary-pages.yaml
+databaseChangeLog:
+  - changeSet:
+      id: 7
+      author: admin
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          tableExists:
+            tableName: diary_pages
+      changes:
+        - createTable:
+            tableName: diary_pages
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: diary_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: rear_page_id
+                  type: UUID
+                  constraints:
+                    nullable: true
+              - column:
+                  name: content
+                  type: jsonb
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: diary_pages
+            baseColumnNames: diary_id
+            referencedTableName: diaries
+            referencedColumnNames: id
+            constraintName: fk_diary_pages_diary
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: diary_pages
+            baseColumnNames: rear_page_id
+            referencedTableName: diary_pages
+            referencedColumnNames: id
+            constraintName: fk_diary_pages_rear
+            onDelete: SET NULL
